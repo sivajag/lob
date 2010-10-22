@@ -1,0 +1,143 @@
+#!/bin/sh
+
+export BOB_VERSION="0.0.1"
+
+case $BOB_VERSION in
+    *SNAPSHOT) SNAPSHOT="YES" ;;
+    *) SNAPSHOT="NO" ;;
+esac
+
+# Make sure classpath is in unix format for manipulating, then put
+# it back to windows format when we use it
+if [ "$OSTYPE" = "cygwin" ] && [ $CLASSPATH != "" ]; then
+    CLASSPATH=`cygpath -up $CLASSPATH`
+fi
+
+if [ $USER = "root" ] && [ "$BOB_ROOT" = "" ]; then
+    echo "WARNING: You're currently running as root; probably by accident."
+    echo "Press control-C to abort or Enter to continue as root."
+    echo "Set BOB_ROOT to disable this warning."
+    read
+fi
+
+ORIGINAL_PWD="$PWD"
+while [ ! -r "$PWD/bob.clj" ] && [ "$PWD" != "/" ] && [ ! $NOT_FOUND ]
+do
+    cd ..
+    if [ "$(dirname "$PWD")" = "/" ]; then
+        NOT_FOUND=0
+        cd "$ORIGINAL_PWD"
+    fi
+done
+
+if [ "$BOB_HOME" = "" ]; then
+    BOB_HOME="$HOME/.bob"
+fi
+
+BOB_PLUGINS="$(ls -1 lib/dev/*jar 2> /dev/null | tr \\n \:)"
+BOB_USER_PLUGINS="$(ls -1 $BOB_HOME/plugins/*jar 2> /dev/null | tr \\n \:)"
+CLASSPATH=$BOB_USER_PLUGINS:$BOB_PLUGINS:src/:$CLASSPATH
+BOB_JAR="$HOME/.m2/repository/cl-bob/clj-bob/$BOB_VERSION/clj-bob-$BOB_VERSION-standalone.jar"
+CLOJURE_JAR="$HOME/.m2/repository/org/clojure/clojure/1.2.0/clojure-1.2.0.jar"
+NULL_DEVICE=/dev/null
+
+# normalize $0 on certain BSDs
+if [ "$(dirname "$0")" = "." ]; then
+    SCRIPT="$(which $(basename "$0"))"
+else
+    SCRIPT="$0"
+fi
+
+# resolve symlinks to the script itself portably
+while [ -h "$SCRIPT" ] ; do
+    ls=`ls -ld "$SCRIPT"`
+    link=`expr "$ls" : '.*-> \(.*\)$'`
+    if expr "$link" : '/.*' > /dev/null; then
+        SCRIPT="$link"
+    else
+        SCRIPT="`dirname "$SCRIPT"`/$link"
+    fi
+done
+
+BIN_DIR="$(dirname "$SCRIPT")"
+
+# Not running from a checkout
+CLASSPATH="$BOB_JAR:$CLASSPATH"
+
+if [ ! -r "$BOB_JAR" -a "$1" != "self-install" ]; then
+    "$0" self-install
+fi
+
+HTTP_CLIENT="wget -O"
+if type -p curl >/dev/null 2>&1; then
+    HTTP_CLIENT="curl -f -L -o"
+fi
+
+JAVA_CMD=${JAVA_CMD:-"java"}
+
+# If you're packaging this for a package manager (.deb, homebrew, etc)
+# you need to remove the self-install and upgrade functionality.
+if [ "$1" = "self-install" ]; then
+    echo "Downloading Bob  now..."
+    BOB_DIR=`dirname "$BOB_JAR"`
+    mkdir -p "$BOB_DIR"
+    BOB_URL="http://github.com/downloads/sivajag/clj-bob/clj-bob-$BOB_VERSION-standalone.jar"
+    $HTTP_CLIENT "$BOB_JAR" "$BOB_URL"
+    if [ $? != 0 ]; then
+        echo "Failed to download $BOB_URL"
+        if [ $SNAPSHOT = "YES" ]; then
+            echo "See README.md for SNAPSHOT build instructions."
+        fi
+        rm $BOB_JAR
+        exit 1
+    fi
+elif [ "$1" = "upgrade" ]; then
+    if [ $SNAPSHOT = "YES" ]; then
+        echo "The upgrade task is only meant for stable releases."
+        echo "See the \"Hacking\" section of the README."
+        exit 1
+    fi
+    if [ ! -w "$SCRIPT" ]; then
+        echo "You do not have permission to upgrade the installation in $SCRIPT"
+        exit 1
+    else
+        echo "The script at $SCRIPT will be upgraded to the latest stable version."
+        echo -n "Do you want to continue [Y/n]? "
+        read RESP
+        case "$RESP" in
+            y|Y|"")
+                echo
+                echo "Upgrading..."
+                BOB_SCRIPT_URL="http://github.com/sivajag/clj-bob/raw/stable/bin/bob"
+                $HTTP_CLIENT "$SCRIPT" "$BOB_SCRIPT_URL" \
+                    && chmod +x "$SCRIPT" \
+                    && echo && $SCRIPT self-install && echo && echo "Now running" `$SCRIPT version`
+                exit $?;;
+            *)
+                echo "Aborted."
+                exit 1;;
+        esac
+    fi
+else
+    if [ "$OSTYPE" = "cygwin" ]; then
+        # When running on Cygwin, use Windows-style paths for java
+        CLOJURE_JAR=`cygpath -w "$CLOJURE_JAR"`
+        CLASSPATH=`cygpath -wp "$CLASSPATH"`
+        NULL_DEVICE=NUL
+    fi
+
+    if [ $DEBUG ]; then
+        echo $CLASSPATH
+        echo $CLOJURE_JAR
+    fi
+
+    # The -Xbootclasspath argument is optional here: if the jar
+    # doesn't exist everything will still work, it will just have a
+    # slower JVM boot.
+    # TODO: add more to the boot classpath
+    test $CYGWIN_JLINE && stty -icanon min 1 -echo
+    exec $RLWRAP $JAVA_CMD -Xbootclasspath/a:"$CLOJURE_JAR" -client $JAVA_OPTS \
+        -cp "$CLASSPATH" $JLINE clojure.main -e "(use 'com.sivajag.clj-bob.core)(-main)" \
+        $NULL_DEVICE $@
+    test $CYGWIN_JLINE && stty icanon echo
+fi
