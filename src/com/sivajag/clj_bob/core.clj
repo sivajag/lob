@@ -1,6 +1,6 @@
 (ns com.sivajag.clj-bob.core
-  (:use [com.sivajag.clj-bob.help])
-  (:gen-class))
+  (:gen-class)
+  (:use [com.sivajag.clj-bob help]))
 
-(defn -main []
+(defn -main [& args]
   (help))
