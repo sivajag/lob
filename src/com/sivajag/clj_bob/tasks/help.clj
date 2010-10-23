@@ -1,4 +1,4 @@
-(ns com.sivajag.clj-bob.help)
+(ns com.sivajag.clj-bob.tasks.help)
 
 (defn help []
   (println "I am Bob - I am always eager to impress and help team on projects")
