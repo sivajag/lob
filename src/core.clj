@@ -1,6 +1,5 @@
-(ns com.sivajag.clj-bob.core
+(ns .core
   (:gen-class))
-
 
 (defn exit
   ([code]
