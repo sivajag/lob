@@ -1,4 +1,4 @@
-(ns .core
+(ns bob.core
   (:gen-class))
 
 (defn exit
@@ -17,7 +17,7 @@
 
 (defn resolve-task
   ([task not-found]
-     (let [task-ns (symbol (str "com.sivajag.clj-bob.tasks." task))
+     (let [task-ns (symbol (str "bob.tasks." task))
            task (symbol task)]
        (try
          (when-not (find-ns task-ns)
