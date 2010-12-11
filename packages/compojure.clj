@@ -1,4 +1,5 @@
-(ns compojure)
+(ns compojure
+  (:require [bob.project :as project]))
 
 (def version "1.0")
 
@@ -14,7 +15,8 @@
 
 (defn new 
   "Creates a new compojure project to get started with"
-  [])
+  [name]
+  (project/new name))
 
 (defn add 
   "Generate new route or model to compojure project"

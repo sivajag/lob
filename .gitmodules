@@ -1,0 +1,6 @@
+[submodule "checkouts/leiningen"]
+	path = checkouts/leiningen
+	url = https://github.com/technomancy/leiningen.git
+[submodule "checkouts/lein-search"]
+	path = checkouts/lein-search
+	url = https://github.com/Licenser/lein-search.git

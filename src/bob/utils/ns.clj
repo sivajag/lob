@@ -25,7 +25,7 @@
 (defn read-ns-form [r]
   (let [form (try (read r)
                   (catch Exception _ ::done))]
-    (if (and (list? form) (= 'ns (first form)))
+    (if (and (list? form) (= 'defn (first form)))
       form
       (when-not (= ::done form)
         (recur r)))))
