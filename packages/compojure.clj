@@ -14,8 +14,9 @@
   "Creates a new compojure project to get started with"
   [name]
   (project/new name)
-  (project/add-dev-deps (project/load-project name) dev-deps)
-  (project/add-deps (project/load-project name) run-deps))
+  (project/add-dev-deps name dev-deps)
+  (project/add-deps name run-deps)
+  (project/run-deps name))
 
 (defn add 
   "Generate new route or model to compojure project"
