@@ -14,14 +14,13 @@
   "Creates a new compojure project to get started with"
   [name]
   (project/new name)
-  (let [p (project/load-project name)]
-    (project/add-dev-deps p dev-deps)
-    (project/add-deps p run-deps)
-    (project/run-deps p)
-    (file/write p 
-                "compojure/templates/core" 
-                (str "src/" name "/core.clj") 
-                {"name" name})))
+  (project/add-dev-deps name dev-deps)
+  (project/add-deps name run-deps)
+  (project/run-deps name)
+  (file/write name 
+              "compojure/templates/core" 
+              (str "src/" name "/core.clj") 
+              {"name" name}))
 
 (defn add 
   "Generate new route or model to compojure project"

@@ -7,7 +7,7 @@
 
 (defroutes routes
   ;;Common
-  (GET "/" [] ("Welcome"))
+  (GET "/" [] "<h1>Get Started!</h1>")
   
   ;;General
   (route/files "/")

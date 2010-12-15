@@ -11,11 +11,14 @@
 (defn load-project [name]
   (lein-core/read-project (str (pwd) "/" name "/project.clj")))
 
-(defn add-dev-deps [project deps]
-  (doall (map (fn [[a v]] (lein-add/add project "--dev" a v)) deps)))
+(defn add-dev-deps [name deps]
+  (let [project (load-project name)]
+    (doall (map (fn [[a v]] (lein-add/add project "--dev" a v)) deps))))
 
-(defn add-deps [project deps]
-  (doall (map (fn [[a v]] (lein-add/add project a v)) deps)))
+(defn add-deps [name deps]
+  (let [project (load-project name)]
+    (doall (map (fn [[a v]] (lein-add/add project a v)) deps))))
 
-(defn run-deps [project]
-  (lein-deps/deps project))
+(defn run-deps [name]
+  (let [project (load-project name)]
+    (lein-deps/deps project)))
