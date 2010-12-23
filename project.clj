@@ -1,4 +1,4 @@
-(defproject clj-bob "0.0.1-SNAPSHOT"
+(defproject bob "0.0.1-SNAPSHOT"
   :description "Bob - Always eager to impress and help team on projects"
   :dependencies [[org.clojure/clojure "1.2.0"]
                  [org.clojure/clojure-contrib "1.2.0"]
@@ -8,4 +8,4 @@
                  [org.apache.maven/maven-ant-tasks "2.0.10" :exclusions [ant]]
                  [org.bituf/clj-stringtemplate "0.2"]]
   :dev-dependencies [[swank-clojure "1.2.1"]]
-  :main core)
+  :main bob.core)
