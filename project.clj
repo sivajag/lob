@@ -6,6 +6,7 @@
                  [jline "0.9.94"]
                  [robert/hooke "1.1.0"]
                  [org.apache.maven/maven-ant-tasks "2.0.10" :exclusions [ant]]
-                 [org.bituf/clj-stringtemplate "0.2"]]
+                 [org.bituf/clj-stringtemplate "0.2"]
+                 [org.clojars.trptcolin/lein-search "0.3.3"]]
   :dev-dependencies [[swank-clojure "1.2.1"]]
   :main bob.core)
