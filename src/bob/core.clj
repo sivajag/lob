@@ -1,6 +1,8 @@
 (ns bob.core
   (:gen-class))
 
+(def a 1)
+
 (defn exit
   ([code]
      (System/exit code))

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-export BOB_VERSION="0.0.1-SNAPSHOT"
+export BOB_VERSION="0.0.1"
 
 case $BOB_VERSION in
     *SNAPSHOT) SNAPSHOT="YES" ;;
