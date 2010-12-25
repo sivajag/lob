@@ -1,14 +1,20 @@
 (ns bob.tasks.help
   (:use [clojure.contrib.duck-streams :only [reader writer with-out-writer]]
-        [bob.utils.ns :only [namespaces-matching tasks-in]]))
+        [bob.utils.ns :only [namespaces-matching tasks-in ns-last-str]]))
 
 (def tasks (->> (namespaces-matching "bob.tasks")
                 (distinct)
                 (sort)))
 
 (defn help-string [task-ns]
-  (map #(let [m (meta %)] (str (:name m) " -- " (:doc m)))
+  (map #(let [m (meta %)] (str (ns-last-str %) ":" (:name m) " -- " (:doc m)))
        (tasks-in task-ns)))
+
+(defn dummy
+  "ok da"
+  {:task true}
+  []
+  (println "ok sone"))
 
 (defn help 
   "Prints help"
