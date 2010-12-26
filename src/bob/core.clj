@@ -1,5 +1,6 @@
 (ns bob.core
   (:gen-class)
+  (:use [bob.utils.ns :only [namespaces-matching]])
   (:require [clojure.contrib.string :as contrib-str]))
 
 (defn exit
@@ -16,18 +17,12 @@
 (defn task-not-found [& _]
   (abort "That's not a task. Use \"bob help\" to list all tasks."))
 
-(defn resolve-task1
-  ([task not-found]
-     (let [task-ns (symbol (str "bob.tasks." task))
-           task (symbol task)]
-       (try
-         (when-not (find-ns task-ns)
-           (require task-ns))
-         (or (ns-resolve task-ns task)
-             not-found)
-         (catch java.io.FileNotFoundException e
-           not-found))))
-  ([task] (resolve-task1 task #'task-not-found)))
+(defn require-task [task-ns]
+  (when-not (find-ns task-ns)
+    (require task-ns)))
+
+(defn require-tasks []
+  (doall (map require-task (namespaces-matching "bob.tasks"))))
 
 (defn resolve-task
   ([task-name not-found]
@@ -35,8 +30,7 @@
        (let [task-ns (symbol (str "bob.tasks." nz-name))
              task (symbol task)]
          (try
-          (when-not (find-ns task-ns)
-            (require task-ns))
+          (require-task task-ns)
           (or (ns-resolve task-ns task)
               not-found)
           (catch java.io.FileNotFoundException e
@@ -50,6 +44,7 @@
 
 (defn -main
   ([& [task-name & args]]
+     (require-tasks)
      (let [task-name (or task-name "bob:help")]
        (let [value (apply-task task-name args task-not-found)]
          (when (integer? value)
